@@ -1,23 +1,45 @@
 # WhisperCPP Video Transcriber
 
-High-performance video transcription tool using [`whisper.cpp`](https://github.com/ggerganov/whisper.cpp), exposed to Python via `pybind11`.
+High-performance video transcription for Python, powered by whisper.cpp (C++ backend).
+**No manual model downloads or C++ setup required.**
 
-This project:
-- Extracts audio from videos using `ffmpeg`
-- Transcribes using Whisper models via direct C++ library integration
-- Leverages multiple CPU threads and GPU acceleration for scalable performance
-- Avoids Python GIL limitations with native C++ implementation
+---
+
+## 🔧 Quick Install & Usage
+
+```bash
+# 1. Install system dependencies (ffmpeg, cmake, C++17 compiler)
+# 2. Set up Python environment
+python -m venv venv
+source venv/bin/activate
+pip install -e .  # or pip install whispercpp if on PyPI
+```
+
+**Transcribe a video in Python:**
+```python
+import whispercpp
+text = whispercpp.transcribe("video.mp4", model="base")
+print(text)
+```
+
+**Or from the command line:**
+```bash
+whispercpp transcribe video.mp4 --model base
+```
+
+> The required model will be downloaded automatically on first use.
 
 ---
 
 ## 🚀 Features
 
-- **Direct Library Integration**: Uses whisper.cpp library directly (no subprocess calls)
-- **High Performance**: Native C++ implementation with multi-threading and GPU acceleration
-- **Easy Python Interface**: Simple pybind11 bindings
-- **Input**: `.mp4`, `.mkv`, or any video format `ffmpeg` supports
-- **Output**: Transcribed text as a Python string
-- **Benchmarking**: Built-in performance testing and optimization tools
+- Native C++/pybind11 speed (CPU & GPU)
+- Automatic model download/caching
+- Simple Python & CLI interface
+- No manual C++ or model setup
+- Input: `.mp4`, `.mkv`, or any video format `ffmpeg` supports
+- Output: Transcribed text as a Python string
+- Benchmarking: Built-in performance testing and optimization tools
 
 ---
 
@@ -55,47 +77,65 @@ choco install ffmpeg
 
 ---
 
-## 🔧 Quick Setup
-
-1. **Clone whisper.cpp** (if not already done):
-```bash
-git clone https://github.com/ggerganov/whisper.cpp
-```
-
-2. **Set up Python virtual environment** (recommended):
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install pybind11 psutil
-```
-
-3. **Build the project**:
-```bash
-./build.sh
-```
-
-4. **Download a model**:
-```bash
-mkdir -p models
-curl -L -o models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin
-```
-
----
-
-## 🧪 Usage
+## 🧪 Usage Details
 
 ### Python API
 
 ```python
 import whispercpp
 
-# Transcribe a video file
-text = whispercpp.transcribe_video(
-    "video.mp4", 
-    model="models/ggml-base.en.bin", 
-    threads=4
-)
+# Transcribe with automatic model downloading
+text = whispercpp.transcribe_video("video.mp4", model="base", threads=4)
 print(text)
+
+# Or use the shorter alias
+text = whispercpp.transcribe("video.mp4", model="small")
+print(text)
+```
+
+### Available Models
+
+The following models are available and will be downloaded automatically:
+
+| Model | Size | Accuracy | Speed | Use Case |
+|-------|------|----------|-------|----------|
+| `tiny` | 74MB | Good | Fastest | Quick transcriptions |
+| `base` | 141MB | Better | Fast | General purpose |
+| `small` | 444MB | Better | Medium | High accuracy needed |
+| `medium` | 1.4GB | Best | Slow | Maximum accuracy |
+| `large` | 2.9GB | Best | Slowest | Professional use |
+
+### Command Line Interface
+
+The package includes a CLI for easy model management and transcription:
+
+```bash
+# List available models
+whispercpp list
+
+# Download a specific model
+whispercpp download base
+
+# Transcribe a video
+whispercpp transcribe video.mp4 --model base --threads 4
+
+# Transcribe without GPU (CPU-only)
+whispercpp transcribe video.mp4 --model small --no-gpu
+```
+
+### Model Management
+
+```python
+import whispercpp
+
+# List available models
+whispercpp.list_models()
+
+# Download a specific model
+whispercpp.download_model("medium")
+
+# Force re-download
+whispercpp.download_model("base", force=True)
 ```
 
 ### Command Line Test
@@ -105,7 +145,7 @@ print(text)
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Run from project root
-PYTHONPATH=build python test_transcribe.py video.mp4
+python test_transcribe.py video.mp4
 ```
 
 ---
@@ -185,7 +225,7 @@ Transcribes a video file using Whisper.
 
 **Parameters:**
 - `video_path` (str): Path to the video file
-- `model` (str): Path to Whisper model binary (.bin file)
+- `model` (str): Model name (e.g. "base", "tiny", etc.) or path to Whisper model binary (.bin file)
 - `threads` (int): Number of CPU threads to use (default: 4)
 
 **Returns:**
@@ -197,248 +237,10 @@ import whispercpp
 
 # Basic usage
 text = whispercpp.transcribe_video("sample.mp4")
-
-# Advanced usage with custom parameters
-text = whispercpp.transcribe_video(
-    "sample.mp4",
-    model="models/ggml-large-v3.bin",
-    threads=8
-)
-```
-
-### Batch Processing Example
-
-```python
-import whispercpp
-from concurrent.futures import ThreadPoolExecutor
-import os
-
-def transcribe_video(video_path, model="models/ggml-base.en.bin", threads=4):
-    return whispercpp.transcribe_video(video_path, model, threads)
-
-# List of video files
-video_files = ["video1.mp4", "video2.mp4", "video3.mp4"]
-
-# Sequential processing
-results_sequential = []
-for video in video_files:
-    result = transcribe_video(video)
-    results_sequential.append(result)
-
-# Parallel processing (faster for multiple videos)
-with ThreadPoolExecutor(max_workers=2) as executor:
-    results_parallel = list(executor.map(
-        lambda v: transcribe_video(v), 
-        video_files
-    ))
 ```
 
 ---
 
-## 🏗️ Architecture
+## License
 
-### Key Improvements
-
-1. **Direct Library Integration**: Uses `whisper.h` and `common-whisper.h` directly instead of CLI calls
-2. **Memory Management**: Proper RAII with `std::unique_ptr` for whisper context
-3. **Error Handling**: Comprehensive exception handling with cleanup
-4. **Performance**: No subprocess overhead, direct memory access
-5. **GPU Acceleration**: Automatic Metal/GPU backend detection and usage
-
-### Build Process
-
-1. **CMake Integration**: Links against whisper.cpp library directly
-2. **pybind11**: Creates Python module with C++ bindings
-3. **Multi-threading**: Leverages whisper.cpp's built-in threading
-4. **Audio Processing**: Uses ffmpeg for optimized audio conversion
-
----
-
-## 🛠️ Development
-
-### Manual Build
-
-```bash
-mkdir build && cd build
-cmake ..
-make -j$(nproc)  # On macOS: make -j$(sysctl -n hw.ncpu)
-```
-
-### Project Structure
-
-```
-whisper-multi-cpu/
-├── CMakeLists.txt          # Build configuration
-├── bindings.cpp            # Python bindings
-├── transcriber.cpp         # Core transcription logic
-├── benchmark.py            # Performance testing script
-├── test_transcribe.py      # Test script
-├── build.sh               # Automated build script
-├── whisper.cpp/           # Submodule (whisper.cpp library)
-└── models/                # Model files directory
-```
-
----
-
-## 📦 PyPI Packaging
-
-To make this a distributable Python package on PyPI, you would need to:
-
-### 1. Create `setup.py`
-
-```python
-from setuptools import setup, Extension
-from pybind11.setup_helpers import Pybind11Extension, build_ext
-import os
-
-# Define the extension module
-ext_modules = [
-    Pybind11Extension(
-        "whispercpp",
-        ["bindings.cpp", "transcriber.cpp", "whisper.cpp/examples/common-whisper.cpp"],
-        include_dirs=[
-            "whisper.cpp/include",
-            "whisper.cpp/ggml/include", 
-            "whisper.cpp/examples"
-        ],
-        libraries=["whisper"],
-        cxx_std=17,
-    ),
-]
-
-setup(
-    name="whispercpp",
-    version="0.1.0",
-    author="Your Name",
-    author_email="your.email@example.com",
-    description="High-performance video transcription using whisper.cpp",
-    long_description=open("README.md").read(),
-    long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/whisper-multi-cpu",
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-    ],
-    python_requires=">=3.8",
-    install_requires=[
-        "pybind11>=2.11.0",
-        "psutil>=5.8.0",
-    ],
-    ext_modules=ext_modules,
-    cmdclass={"build_ext": build_ext},
-    zip_safe=False,
-)
-```
-
-### 2. Create `pyproject.toml`
-
-```toml
-[build-system]
-requires = ["setuptools>=61.0", "wheel", "pybind11>=2.11.0"]
-build-backend = "setuptools.build_meta"
-
-[project]
-name = "whispercpp"
-version = "0.1.0"
-description = "High-performance video transcription using whisper.cpp"
-readme = "README.md"
-requires-python = ">=3.8"
-dependencies = [
-    "psutil>=5.8.0",
-]
-```
-
-### 3. Build and Distribute
-
-```bash
-# Install build tools
-pip install build twine
-
-# Build the package
-python -m build
-
-# Upload to PyPI (test first)
-twine upload --repository testpypi dist/*
-
-# Upload to PyPI
-twine upload dist/*
-```
-
-### 4. Installation for Users
-
-```bash
-pip install whispercpp
-```
-
-**Note**: The PyPI version would need to handle the whisper.cpp dependency differently (either bundle it or provide installation instructions).
-
----
-
-## 🧠 Performance Notes
-
-- **GPU Acceleration**: Automatically uses Metal (macOS) or CUDA (Linux/Windows) when available
-- **CPU Multi-threading**: Configurable thread count for your hardware
-- **Memory Efficient**: Processes audio in chunks
-- **Fast Audio Extraction**: Uses ffmpeg for optimized audio conversion
-
----
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-1. **Import Error**: Make sure you're running from the project root with `PYTHONPATH=build`
-2. **Model Not Found**: Download the model file to `models/` directory
-3. **ffmpeg Missing**: Install ffmpeg using the instructions above
-4. **Build Errors**: Ensure you have C++17 compiler and cmake >= 3.15
-5. **Python Environment**: Make sure you're in your virtual environment
-
-### Virtual Environment Issues
-
-If you get import errors, ensure your virtual environment is activated:
-```bash
-# Check if you're in a virtual environment
-which python  # Should show path to your venv
-
-# Activate if needed
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### Debug Mode
-
-To see detailed build information:
-```bash
-cd build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make VERBOSE=1
-```
-
-### Benchmark Issues
-
-If the benchmark fails:
-1. Ensure `psutil` is installed: `pip install psutil`
-2. Check that the model file exists in `models/`
-3. Verify ffmpeg is installed and accessible
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] GPU acceleration support for more backends
-- [ ] Real-time streaming transcription
-- [ ] Batch processing multiple files
-- [ ] Audio chunking for long-form content
-- [ ] Language detection and selection
-- [ ] Timestamp output option
-- [ ] Web interface
-- [ ] Docker containerization
-- [ ] PyPI distribution
-- [ ] Model caching and reuse
-- [ ] Progress callbacks
-- [ ] Custom audio preprocessing
+MIT

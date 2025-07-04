@@ -1,0 +1,5 @@
+recursive-include whispercpp *.cpp *.h *.py
+recursive-include whispercpp/include *.h
+recursive-include whispercpp/ggml/include *.h
+recursive-include whispercpp/ggml/src *.c *.cpp *.h
+include whispercpp/stb_vorbis.c 
