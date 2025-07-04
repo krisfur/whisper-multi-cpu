@@ -7,9 +7,9 @@ requires = [
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "whispercpp"
+name = "whisper-parallel-cpu"
 version = "1.0.0"
-description = "High-performance video transcription using whisper.cpp with automatic model downloading"
+description = "High-performance video transcription using whisper.cpp with automatic model downloading and CPU parallelism"
 readme = "README.md"
 license = "MIT"
 authors = [
@@ -18,7 +18,7 @@ authors = [
 maintainers = [
     {name = "Krzysztof Furman", email = "k_furman@outlook.com"},
 ]
-keywords = ["whisper", "transcription", "audio", "speech", "ai", "ml", "cpp", "pybind11"]
+keywords = ["whisper", "transcription", "audio", "speech", "ai", "ml", "cpp", "pybind11", "cpu", "parallel", "multithreading"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -55,4 +55,4 @@ Issues = "https://github.com/krisfur/whisper-multi-cpu/issues"
 Documentation = "https://github.com/krisfur/whisper-multi-cpu#readme"
 
 [project.scripts]
-whispercpp = "whispercpp.cli:main" 
+whisper-parallel-cpu = "whispercpp.cli:main" 
