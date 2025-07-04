@@ -12,14 +12,6 @@ if [ ! -f "CMakeLists.txt" ]; then
     exit 1
 fi
 
-# Check if whisper.cpp subdirectory exists
-if [ ! -d "whisper.cpp" ]; then
-    echo "Error: whisper.cpp directory not found."
-    echo "Please clone whisper.cpp first:"
-    echo "git clone https://github.com/ggerganov/whisper.cpp"
-    exit 1
-fi
-
 # Create build directory
 mkdir -p build
 cd build
@@ -44,11 +36,11 @@ fi
 echo "Build completed successfully!"
 echo ""
 echo "To test the module:"
-echo "1. Download a model file:"
-echo "   mkdir -p models"
-echo "   curl -L -o models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin"
+echo "1. Install the package:"
+echo "   pip install -e .."
 echo ""
 echo "2. Run the test script:"
 echo "   python ../test_transcribe.py <path_to_video_file>"
 echo ""
-echo "Note: Make sure you have ffmpeg installed for audio extraction." 
+echo "Note: Make sure you have ffmpeg installed for audio extraction."
+echo "Models will be downloaded automatically on first use." 

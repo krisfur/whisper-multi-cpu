@@ -15,14 +15,19 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(pybind11)
 
-# Add whisper.cpp as a subdirectory to build the whisper library
-add_subdirectory(whisper.cpp)
+# Fetch whisper.cpp
+FetchContent_Declare(
+    whisper_cpp
+    GIT_REPOSITORY https://github.com/ggerganov/whisper.cpp.git
+    GIT_TAG        master
+)
+FetchContent_MakeAvailable(whisper_cpp)
 
 # Create the Python extension
 pybind11_add_module(whispercpp MODULE
     whispercpp/bindings.cpp
     whispercpp/transcriber.cpp
-    whisper.cpp/examples/common-whisper.cpp
+    ${whisper_cpp_SOURCE_DIR}/examples/common-whisper.cpp
 )
 
 # Link against the whisper library and required libraries
@@ -33,9 +38,9 @@ target_link_libraries(whispercpp PRIVATE
 
 # Include directories
 target_include_directories(whispercpp PRIVATE 
-    whisper.cpp/include
-    whisper.cpp/ggml/include
-    whisper.cpp/examples
+    ${whisper_cpp_SOURCE_DIR}/include
+    ${whisper_cpp_SOURCE_DIR}/ggml/include
+    ${whisper_cpp_SOURCE_DIR}/examples
 )
 
 # Ensure the extension is placed in the Python package
