@@ -49,10 +49,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/krisfur/whisper-multi-cpu"
-Repository = "https://github.com/krisfur/whisper-multi-cpu"
-Issues = "https://github.com/krisfur/whisper-multi-cpu/issues"
-Documentation = "https://github.com/krisfur/whisper-multi-cpu#readme"
+Homepage = "https://github.com/krisfur/whisper-parallel-cpu"
+Repository = "https://github.com/krisfur/whisper-parallel-cpu"
+Issues = "https://github.com/krisfur/whisper-parallel-cpu/issues"
+Documentation = "https://github.com/krisfur/whisper-parallel-cpu#readme"
 
 [project.scripts]
 whisper-parallel-cpu = "whispercpp.cli:main" 
