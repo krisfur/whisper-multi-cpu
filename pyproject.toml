@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "pybind11>=2.11.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whispercpp"
+version = "0.1.0"
+description = "High-performance video transcription using whisper.cpp"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Krzysztof Furman", email = "k_furman@outlook.com"}
+]
+maintainers = [
+    {name = "Krzysztof Furman", email = "k_furman@outlook.com"}
+]
+keywords = ["whisper", "transcription", "speech", "audio", "video", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "psutil>=5.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pybind11>=2.11.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/krisfur/whisper-multi-cpu"
+Repository = "https://github.com/krisfur/whisper-multi-cpu"
+Documentation = "https://github.com/krisfur/whisper-multi-cpu#readme"
+Issues = "https://github.com/krisfur/whisper-multi-cpu/issues"
+
+[tool.setuptools]
+packages = ["whispercpp"]
+
+[tool.setuptools.package-data]
+whispercpp = ["*.py", "*.cpp", "*.h"] 
