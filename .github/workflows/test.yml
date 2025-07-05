@@ -31,5 +31,11 @@ jobs:
         
     - name: Run tests
       run: |
-        python test_transcribe.py --help
-        python benchmark.py --help 
+        # Test that the module can be imported
+        python -c "import whisper_parallel_cpu; print('✓ Module imported successfully')"
+        
+        # Test CLI help
+        whisper_parallel_cpu --help
+        
+        # Test that we can list models
+        python -c "import whisper_parallel_cpu; whisper_parallel_cpu.list_models()" 
