@@ -66,6 +66,26 @@ choco install ffmpeg
 
 ---
 
+## 🛠️ Development Setup
+
+For developers who want to build from source:
+
+```bash
+# Clone the repository
+git clone https://github.com/krisfur/whisper-parallel-cpu.git
+cd whisper-parallel-cpu
+
+# Install in editable mode
+pip install -e .
+
+# Test the installation
+python test_transcribe.py video.mp4
+```
+
+The package uses `scikit-build-core` which automatically handles CMake configuration and building.
+
+---
+
 ## 🧪 Usage Details
 
 ### Python API
@@ -147,7 +167,7 @@ The included benchmark script helps you find the optimal configuration for your 
 
 ```bash
 # Test with 5 video copies
-PYTHONPATH=build python benchmark.py video.mp4 5
+python benchmark.py video.mp4 5
 ```
 
 ### What the Benchmark Tests

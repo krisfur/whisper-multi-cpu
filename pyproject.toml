@@ -55,4 +55,4 @@ Issues = "https://github.com/krisfur/whisper-parallel-cpu/issues"
 Documentation = "https://github.com/krisfur/whisper-parallel-cpu#readme"
 
 [project.scripts]
-whisper-parallel-cpu = "whisper_parallel_cpu.cli:main" 
+whisper_parallel_cpu = "whisper_parallel_cpu.cli:main" 
