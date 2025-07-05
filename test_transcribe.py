@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test script for whispercpp module
+Test script for whisper_parallel_cpu module
 """
 
 import sys
@@ -9,7 +9,7 @@ from pathlib import Path
 
 def test_transcribe():
     try:
-        import whispercpp
+        import whisper_parallel_cpu
         
         # Test with a sample video file if provided
         if len(sys.argv) > 1:
@@ -24,19 +24,8 @@ def test_transcribe():
         
         print(f"Transcribing: {video_path}")
         
-        # Default model path
-        model_path = "models/ggml-base.en.bin"
-        
-        # Check if model exists
-        if not os.path.exists(model_path):
-            print(f"Warning: Model file '{model_path}' not found")
-            print("Please download a model file first:")
-            print("mkdir -p models")
-            print("curl -L -o models/ggml-base.en.bin https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin")
-            return False
-        
-        # Transcribe with 4 threads
-        result = whispercpp.transcribe_video(video_path, model_path, 4)
+        # Use the new API with automatic model downloading
+        result = whisper_parallel_cpu.transcribe_video(video_path, model="base", threads=4)
         
         print("\nTranscription result:")
         print("=" * 50)
@@ -46,7 +35,7 @@ def test_transcribe():
         return True
         
     except ImportError as e:
-        print(f"Error: Could not import whispercpp module: {e}")
+        print(f"Error: Could not import whisper_parallel_cpu module: {e}")
         print("Make sure you've built the module and are running from the build directory")
         return False
     except Exception as e:

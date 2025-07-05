@@ -1,33 +1,22 @@
-# WhisperCPP Video Transcriber
+# Whisper Parallel CPU Video Transcriber
 
-High-performance video transcription for Python, powered by whisper.cpp (C++ backend).
-**No manual model downloads or C++ setup required.**
+A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management.
 
----
-
-## 🔧 Quick Install & Usage
+## Quick Start
 
 ```bash
-# 1. Install system dependencies (ffmpeg, cmake, C++17 compiler)
-# 2. Set up Python environment
-python -m venv venv
-source venv/bin/activate
-pip install -e .  # or pip install whispercpp if on PyPI
+pip install whisper-parallel-cpu
 ```
 
-**Transcribe a video in Python:**
 ```python
-import whispercpp
-text = whispercpp.transcribe("video.mp4", model="base")
-print(text)
+import whisper_parallel_cpu
+text = whisper_parallel_cpu.transcribe("video.mp4", model="base")
 ```
 
-**Or from the command line:**
+Or use the CLI:
 ```bash
-whispercpp transcribe video.mp4 --model base
+whisper_parallel_cpu transcribe video.mp4 --model base
 ```
-
-> The required model will be downloaded automatically on first use.
 
 ---
 
@@ -82,14 +71,14 @@ choco install ffmpeg
 ### Python API
 
 ```python
-import whispercpp
+import whisper_parallel_cpu
 
 # Transcribe with automatic model downloading
-text = whispercpp.transcribe_video("video.mp4", model="base", threads=4)
+text = whisper_parallel_cpu.transcribe_video("video.mp4", model="base", threads=4)
 print(text)
 
 # Or use the shorter alias
-text = whispercpp.transcribe("video.mp4", model="small")
+text = whisper_parallel_cpu.transcribe("video.mp4", model="small")
 print(text)
 ```
 
@@ -111,31 +100,31 @@ The package includes a CLI for easy model management and transcription:
 
 ```bash
 # List available models
-whispercpp list
+whisper_parallel_cpu list
 
 # Download a specific model
-whispercpp download base
+whisper_parallel_cpu download base
 
 # Transcribe a video
-whispercpp transcribe video.mp4 --model base --threads 4
+whisper_parallel_cpu transcribe video.mp4 --model base --threads 4
 
 # Transcribe without GPU (CPU-only)
-whispercpp transcribe video.mp4 --model small --no-gpu
+whisper_parallel_cpu transcribe video.mp4 --model small --no-gpu
 ```
 
 ### Model Management
 
 ```python
-import whispercpp
+import whisper_parallel_cpu
 
 # List available models
-whispercpp.list_models()
+whisper_parallel_cpu.list_models()
 
 # Download a specific model
-whispercpp.download_model("medium")
+whisper_parallel_cpu.download_model("medium")
 
 # Force re-download
-whispercpp.download_model("base", force=True)
+whisper_parallel_cpu.download_model("base", force=True)
 ```
 
 ### Command Line Test
@@ -198,11 +187,11 @@ Batch processing (5 videos):
   Expected throughput: 1.43 videos/second
 
 Python code example:
-  import whispercpp
+  import whisper_parallel_cpu
   from concurrent.futures import ThreadPoolExecutor
   
   def transcribe_video(video_path):
-      return whispercpp.transcribe_video(video_path, 'models/ggml-base.en.bin', 16)
+      return whisper_parallel_cpu.transcribe_video(video_path, 'models/ggml-base.en.bin', 16)
   
   with ThreadPoolExecutor(max_workers=2) as executor:
       results = list(executor.map(transcribe_video, video_paths))
@@ -233,10 +222,10 @@ Transcribes a video file using Whisper.
 
 **Example:**
 ```python
-import whispercpp
+import whisper_parallel_cpu
 
 # Basic usage
-text = whispercpp.transcribe_video("sample.mp4")
+text = whisper_parallel_cpu.transcribe_video("sample.mp4")
 ```
 
 ---

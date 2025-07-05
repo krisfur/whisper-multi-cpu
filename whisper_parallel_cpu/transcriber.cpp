@@ -90,7 +90,7 @@ std::string transcribe_video(const std::string& video_path,
                              const std::string& model,
                              int threads,
                              bool use_gpu = true) {
-    fs::path tmp_wav = fs::temp_directory_path() / "whispercpp_tmp.wav";
+    fs::path tmp_wav = fs::temp_directory_path() / "whisper_parallel_cpu_tmp.wav";
 
     if (!extract_audio(video_path, tmp_wav.string())) {
         throw std::runtime_error("Failed to extract audio with ffmpeg");

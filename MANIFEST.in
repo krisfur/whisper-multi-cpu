@@ -1,5 +1,10 @@
-recursive-include whispercpp *.cpp *.h *.py
-recursive-include whispercpp/include *.h
-recursive-include whispercpp/ggml/include *.h
-recursive-include whispercpp/ggml/src *.c *.cpp *.h
-include whispercpp/stb_vorbis.c 
+recursive-include whisper_parallel_cpu *.cpp *.h *.py *.so
+recursive-include whisper_parallel_cpu/include *.h
+recursive-include whisper_parallel_cpu/ggml/include *.h
+recursive-include whisper_parallel_cpu/ggml/src *.c *.cpp *.h
+include whisper_parallel_cpu/stb_vorbis.c
+include whisper_parallel_cpu/*.py
+include whisper_parallel_cpu/*.cpp
+include whisper_parallel_cpu/*.so
+include whisper_parallel_cpu/*.dylib
+include whisper_parallel_cpu/*.dll 

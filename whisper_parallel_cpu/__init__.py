@@ -1,4 +1,14 @@
-from .whispercpp import transcribe_video as _transcribe_video
+# Import the C++ extension functions
+try:
+    # Try to import the extension directly - this should work in installed packages
+    from . import whisper_parallel_cpu as _extension  # type: ignore
+    _transcribe_video_impl = _extension.transcribe_video
+except ImportError:
+    # Fallback for development or if extension is not available
+    def _transcribe_video_impl(*args, **kwargs):
+        raise ImportError("C++ extension not available. Please rebuild the package.")
+
+# Import Python modules
 from .model_manager import ensure_model, list_models, download_model, get_model_manager
 
 # Re-export the original function
@@ -24,7 +34,7 @@ def transcribe_video(video_path: str, model: str = "base", threads: int = 4, use
         # Ensure the model is downloaded
         model_path = ensure_model(model)
     
-    return _transcribe_video(video_path, model_path, threads, use_gpu)
+    return _transcribe_video_impl(video_path, model_path, threads, use_gpu)
 
 # Alias for convenience
 transcribe = transcribe_video 

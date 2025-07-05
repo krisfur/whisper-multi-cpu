@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""
-Command-line interface for whispercpp model management
-"""
+"""Command-line interface for whisper_parallel_cpu model management"""
 
 import argparse
 import sys
-from pathlib import Path
+from .model_manager import get_model_manager, list_models, download_model
 
 def main():
-    parser = argparse.ArgumentParser(description="whispercpp model manager")
+    parser = argparse.ArgumentParser(description="whisper_parallel_cpu model manager")
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
     # List models command
@@ -29,11 +27,9 @@ def main():
     args = parser.parse_args()
     
     if args.command == 'list':
-        from .model_manager import list_models
         list_models()
     
     elif args.command == 'download':
-        from .model_manager import download_model
         try:
             model_path = download_model(args.model, force=args.force)
             print(f"Model downloaded to: {model_path}")

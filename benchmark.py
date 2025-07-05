@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Benchmark script for whispercpp transcriber
+Benchmark script for whisper_parallel_cpu transcriber
 Tests scaling with multiple videos and different thread configurations
 """
 
@@ -30,11 +30,11 @@ def get_system_info():
 
 def single_transcription(video_path, model_path, threads):
     """Single transcription with timing"""
-    import whispercpp
+    import whisper_parallel_cpu
     
     start_time = time.time()
     try:
-        result = whispercpp.transcribe_video(video_path, model_path, threads)
+        result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads)
         end_time = time.time()
         return {
             'success': True,
@@ -304,19 +304,19 @@ def main():
         print(f"  Expected throughput: {sequential_results['throughput']:.2f} videos/second")
     print(f"")
     print(f"Python code example:")
-    print(f"  import whispercpp")
+    print(f"  import whisper_parallel_cpu")
     if best_parallel and best_parallel['speedup'] > 1.1:
         print(f"  from concurrent.futures import ThreadPoolExecutor")
         print(f"  ")
         print(f"  def transcribe_video(video_path):")
-        print(f"      return whispercpp.transcribe_video(video_path, '{model_path}', {optimal_threads})")
+        print(f"      return whisper_parallel_cpu.transcribe_video(video_path, '{model_path}', {optimal_threads})")
         print(f"  ")
         print(f"  with ThreadPoolExecutor(max_workers={best_workers}) as executor:")
         print(f"      results = list(executor.map(transcribe_video, video_paths))")
     else:
         print(f"  ")
         print(f"  for video_path in video_paths:")
-        print(f"      result = whispercpp.transcribe_video(video_path, '{model_path}', {optimal_threads})")
+        print(f"      result = whisper_parallel_cpu.transcribe_video(video_path, '{model_path}', {optimal_threads})")
 
 if __name__ == "__main__":
     main() 

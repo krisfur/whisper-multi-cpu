@@ -4,7 +4,7 @@ Thread Benchmark for Cloud Containers
 Tests different thread counts to find optimal performance
 """
 
-import whispercpp
+import whisper_parallel_cpu
 import time
 import psutil
 import sys
@@ -44,7 +44,7 @@ def benchmark_threads(video_path, model_path, max_threads=None):
         print(f"Testing {threads} thread(s)...", end=" ", flush=True)
         start_time = time.time()
         try:
-            result = whispercpp.transcribe_video(video_path, model_path, threads, use_gpu=False)
+            result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu=False)
             elapsed = time.time() - start_time
             results_cpu[threads] = elapsed
             print(f"✓ {elapsed:.2f}s")
@@ -79,7 +79,7 @@ def benchmark_threads(video_path, model_path, max_threads=None):
         print(f"Testing {threads} thread(s)...", end=" ", flush=True)
         start_time = time.time()
         try:
-            result = whispercpp.transcribe_video(video_path, model_path, threads, use_gpu=True)
+            result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu=True)
             elapsed = time.time() - start_time
             results_gpu[threads] = elapsed
             print(f"✓ {elapsed:.2f}s")

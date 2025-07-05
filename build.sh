@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Build script for whispercpp transcriber
+# Build script for whisper_parallel_cpu transcriber
 
 set -e  # Exit on any error
 
-echo "Building whispercpp transcriber..."
+echo "Building whisper_parallel_cpu transcriber..."
 
 # Check if we're in the right directory
 if [ ! -f "CMakeLists.txt" ]; then

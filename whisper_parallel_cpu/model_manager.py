@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Model Manager for whispercpp
+Model Manager for whisper_parallel_cpu
 Automatically downloads and manages whisper.cpp models
 """
 

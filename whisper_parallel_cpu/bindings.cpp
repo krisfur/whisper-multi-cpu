@@ -15,7 +15,7 @@ std::string transcribe_video(const std::string& video_path,
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(whispercpp, m) {
+PYBIND11_MODULE(whisper_parallel_cpu, m) {
     m.def("transcribe_video", &transcribe_video,
           py::arg("video_path"),
           py::arg("model") = "models/ggml-base.en.bin",
