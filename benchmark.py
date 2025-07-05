@@ -14,8 +14,10 @@ from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import threading
 import psutil
 import gc
+import whisper_parallel_cpu
+from typing import Dict, List, Any, Union
 
-def get_system_info():
+def get_system_info() -> Dict[str, Any]:
     """Get system information for benchmarking context"""
     cpu_freq = psutil.cpu_freq()
     freq_value = cpu_freq.current if cpu_freq else 0
@@ -28,13 +30,11 @@ def get_system_info():
     }
     return info
 
-def single_transcription(video_path, model_path, threads):
+def single_transcription(video_path: str, model_path: str, threads: int, use_gpu: bool = True) -> Dict[str, Any]:
     """Single transcription with timing"""
-    import whisper_parallel_cpu
-    
     start_time = time.time()
     try:
-        result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads)
+        result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu)
         end_time = time.time()
         return {
             'success': True,
@@ -246,7 +246,7 @@ def main():
     print(f"{'='*60}")
     
     for max_workers in max_workers_options:
-        if max_workers > len(video_paths):
+        if max_workers > len(video_paths):  # type: ignore
             continue
             
         parallel_results = benchmark_multiple_videos_parallel(
@@ -271,12 +271,12 @@ def main():
     best_throughput = 0
     best_workers = 0
     for max_workers in max_workers_options:
-        if max_workers > len(video_paths):
+        if max_workers > len(video_paths):  # type: ignore
             continue
         parallel_results = benchmark_multiple_videos_parallel(
             video_paths, model_path, optimal_threads, max_workers
         )
-        if 'throughput' in parallel_results and parallel_results['throughput'] > best_throughput:
+        if 'throughput' in parallel_results and parallel_results['throughput'] > best_throughput:  # type: ignore
             best_throughput = parallel_results['throughput']
             best_parallel = parallel_results
             best_workers = max_workers
@@ -294,7 +294,7 @@ def main():
     print(f"  model = {model_path}")
     print(f"")
     print(f"Batch processing ({num_copies} videos):")
-    if best_parallel and best_parallel['speedup'] > 1.1:
+    if best_parallel and best_parallel['speedup'] > 1.1:  # type: ignore
         print(f"  Use parallel processing with {best_workers} workers")
         print(f"  Each worker uses {optimal_threads} threads")
         print(f"  Expected throughput: {best_parallel['throughput']:.2f} videos/second")
@@ -305,7 +305,7 @@ def main():
     print(f"")
     print(f"Python code example:")
     print(f"  import whisper_parallel_cpu")
-    if best_parallel and best_parallel['speedup'] > 1.1:
+    if best_parallel and best_parallel['speedup'] > 1.1:  # type: ignore
         print(f"  from concurrent.futures import ThreadPoolExecutor")
         print(f"  ")
         print(f"  def transcribe_video(video_path):")
