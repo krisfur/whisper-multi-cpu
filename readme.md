@@ -2,49 +2,66 @@
 
 A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management.
 
-## Quick Start
+## 🚀 Quick Start
 
+**Install from PyPI:**
 ```bash
 pip install whisper-parallel-cpu
 ```
 
+**Use in Python:**
 ```python
 import whisper_parallel_cpu
 text = whisper_parallel_cpu.transcribe("video.mp4", model="base")
 ```
 
-Or use the CLI:
+**Or use the CLI:**
 ```bash
 whisper_parallel_cpu transcribe video.mp4 --model base
 ```
 
 ---
 
-## 🚀 Features
+## ✨ Features
 
-- Native C++/pybind11 speed (CPU & GPU)
-- Automatic model download/caching
-- Simple Python & CLI interface
-- No manual C++ or model setup
-- Input: `.mp4`, `.mkv`, or any video format `ffmpeg` supports
-- Output: Transcribed text as a Python string
-- Benchmarking: Built-in performance testing and optimization tools
+- **Native C++/pybind11 speed** (CPU & GPU acceleration)
+- **Automatic model download/caching** - no manual setup required
+- **Simple Python & CLI interface** - just `pip install` and go
+- **Input**: `.mp4`, `.mkv`, or any video format `ffmpeg` supports
+- **Output**: Transcribed text as a Python string
+- **Benchmarking**: Built-in performance testing and optimization tools
+- **Cross-platform**: Works on macOS, Linux, and Windows
+
+---
+
+## 📦 Installation
+
+### From PyPI (Recommended)
+```bash
+pip install whisper-parallel-cpu
+```
+
+### From Source (Development)
+```bash
+# Clone the repository
+git clone https://github.com/krisfur/whisper-parallel-cpu.git
+cd whisper-parallel-cpu
+
+# Install in editable mode
+pip install -e .
+
+# Test the installation
+python test_transcribe.py video.mp4
+```
 
 ---
 
 ## 🧰 Requirements
 
 ### System Tools
-
-- C++17 compiler (`g++`, `clang++`)
-- `cmake` (>=3.15)
-- `ffmpeg` (for audio extraction)
-
-### Python
-
-```bash
-pip install pybind11 psutil
-```
+- **C++17 compiler** (`g++`, `clang++`) - automatically handled by pip
+- **cmake** (>=3.15) - automatically handled by pip
+- **ffmpeg** (for audio extraction)
 
 ### Install ffmpeg
 
@@ -66,27 +83,7 @@ choco install ffmpeg
 
 ---
 
-## 🛠️ Development Setup
-
-For developers who want to build from source:
-
-```bash
-# Clone the repository
-git clone https://github.com/krisfur/whisper-parallel-cpu.git
-cd whisper-parallel-cpu
-
-# Install in editable mode
-pip install -e .
-
-# Test the installation
-python test_transcribe.py video.mp4
-```
-
-The package uses `scikit-build-core` which automatically handles CMake configuration and building.
-
----
-
-## 🧪 Usage Details
+## 🧪 Usage
 
 ### Python API
 
@@ -100,6 +97,9 @@ print(text)
 # Or use the shorter alias
 text = whisper_parallel_cpu.transcribe("video.mp4", model="small")
 print(text)
+
+# CPU-only mode (no GPU)
+text = whisper_parallel_cpu.transcribe("video.mp4", model="base", use_gpu=False)
 ```
 
 ### Available Models
@@ -115,8 +115,6 @@ The following models are available and will be downloaded automatically:
 | `large` | 2.9GB | Best | Slowest | Professional use |
 
 ### Command Line Interface
-
-The package includes a CLI for easy model management and transcription:
 
 ```bash
 # List available models
@@ -147,23 +145,11 @@ whisper_parallel_cpu.download_model("medium")
 whisper_parallel_cpu.download_model("base", force=True)
 ```
 
-### Command Line Test
-
-```bash
-# Make sure you're in your virtual environment
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Run from project root
-python test_transcribe.py video.mp4
-```
-
 ---
 
 ## 📊 Benchmarking & Performance
 
 ### Run Performance Tests
-
-The included benchmark script helps you find the optimal configuration for your hardware:
 
 ```bash
 # Test with 5 video copies
@@ -177,46 +163,6 @@ python benchmark.py video.mp4 5
 3. **Parallel Processing**: Tests concurrent processing with different numbers of workers
 4. **Optimal Configuration**: Provides the best settings for your specific hardware
 
-### Benchmark Output Example
-
-```
-============================================================
-📊 Single Video - Thread Scaling
-============================================================
-System: 10 cores, 16.0GB RAM
-Threads  Mean (s)   Std (s)    Min (s)    Max (s)   
---------------------------------------------------
-1        1.49       0.04       1.45       1.53      
-2        1.43       0.02       1.41       1.45      
-4        1.43       0.03       1.40       1.45      
-8        1.42       0.02       1.40       1.43      
-16       1.40       0.01       1.38       1.41      
-
-🏆 Optimal thread count: 16 (avg: 1.40s)
-
-============================================================
-🏆 BEST CONFIGURATION FOR REPRODUCTION
-============================================================
-Single video transcription:
-  threads = 16
-  model = models/ggml-base.en.bin
-
-Batch processing (5 videos):
-  Use parallel processing with 2 workers
-  Each worker uses 16 threads
-  Expected throughput: 1.43 videos/second
-
-Python code example:
-  import whisper_parallel_cpu
-  from concurrent.futures import ThreadPoolExecutor
-  
-  def transcribe_video(video_path):
-      return whisper_parallel_cpu.transcribe_video(video_path, 'models/ggml-base.en.bin', 16)
-  
-  with ThreadPoolExecutor(max_workers=2) as executor:
-      results = list(executor.map(transcribe_video, video_paths))
-```
-
 ### Performance Optimization Tips
 
 1. **GPU Acceleration**: The system automatically uses Metal (macOS) or CUDA (Linux/Windows) when available
@@ -228,7 +174,7 @@ Python code example:
 
 ## ⚙️ API Reference
 
-### `transcribe_video(video_path, model, threads)`
+### `transcribe_video(video_path, model, threads, use_gpu)`
 
 Transcribes a video file using Whisper.
 
@@ -236,6 +182,7 @@ Transcribes a video file using Whisper.
 - `video_path` (str): Path to the video file
 - `model` (str): Model name (e.g. "base", "tiny", etc.) or path to Whisper model binary (.bin file)
 - `threads` (int): Number of CPU threads to use (default: 4)
+- `use_gpu` (bool): Whether to use GPU acceleration (default: True)
 
 **Returns:**
 - `str`: Transcribed text
@@ -246,10 +193,37 @@ import whisper_parallel_cpu
 
 # Basic usage
 text = whisper_parallel_cpu.transcribe_video("sample.mp4")
+
+# Advanced usage
+text = whisper_parallel_cpu.transcribe_video(
+    "sample.mp4", 
+    model="medium", 
+    threads=8, 
+    use_gpu=False
+)
 ```
 
 ---
 
-## License
+## 🤝 Contributing
 
-MIT
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make your changes and test thoroughly
+4. Commit your changes: `git commit -m 'Add feature'`
+5. Push to the branch: `git push origin feature-name`
+6. Submit a pull request
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- Built on [whisper.cpp](https://github.com/ggerganov/whisper.cpp) by Georgi Gerganov
+- Uses [pybind11](https://github.com/pybind/pybind11) for Python bindings
+- Model management inspired by the original OpenAI Whisper project
