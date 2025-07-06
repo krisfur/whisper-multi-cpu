@@ -42,7 +42,8 @@ jobs:
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
         # Upload source distribution (more reliable for C++ extensions)
-        twine upload dist/*.tar.gz
+        # --skip-existing prevents errors if version already exists
+        twine upload dist/*.tar.gz --skip-existing
         
     - name: Create GitHub Release
       run: |
@@ -50,10 +51,15 @@ jobs:
         VERSION=${GITHUB_REF#refs/tags/}
         echo "Creating release for version: $VERSION"
         
-        # Create release with auto-generated notes
-        gh release create $VERSION \
-          --title "Release $VERSION" \
-          --notes "Audio file support and CPU-first design release" \
-          --repo $GITHUB_REPOSITORY
+        # Check if release already exists
+        if gh release view $VERSION --repo $GITHUB_REPOSITORY >/dev/null 2>&1; then
+          echo "Release $VERSION already exists, skipping creation"
+        else
+          # Create release with auto-generated notes
+          gh release create $VERSION \
+            --title "Release $VERSION" \
+            --notes "Audio file support and CPU-first design release" \
+            --repo $GITHUB_REPOSITORY
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
