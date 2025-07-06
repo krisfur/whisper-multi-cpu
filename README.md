@@ -1,6 +1,6 @@
 # Whisper Parallel CPU Video Transcriber
 
-A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management.
+A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management. Targeting distributed cloud deployments and transcription of video files.
 
 ## 🚀 Quick Start
 
