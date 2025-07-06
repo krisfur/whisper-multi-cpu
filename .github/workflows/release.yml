@@ -45,9 +45,15 @@ jobs:
         twine upload dist/*.tar.gz
         
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: dist/*
-        generate_release_notes: true
+      run: |
+        # Extract version from tag
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "Creating release for version: $VERSION"
+        
+        # Create release with auto-generated notes
+        gh release create $VERSION \
+          --title "Release $VERSION" \
+          --notes "Audio file support and CPU-first design release" \
+          --repo $GITHUB_REPOSITORY
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
