@@ -32,12 +32,17 @@ jobs:
       run: |
         python -m build
         
+    - name: Check package
+      run: |
+        twine check dist/*
+        
     - name: Publish to PyPI
       env:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        twine upload dist/*
+        # Upload source distribution (more reliable for C++ extensions)
+        twine upload dist/*.tar.gz
         
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
