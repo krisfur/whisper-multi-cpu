@@ -11,21 +11,22 @@ def test_transcribe():
     try:
         import whisper_parallel_cpu
         
-        # Test with a sample video file if provided
+        # Test with a sample audio or video file if provided
         if len(sys.argv) > 1:
-            video_path = sys.argv[1]
-            if not os.path.exists(video_path):
-                print(f"Error: Video file '{video_path}' not found")
+            file_path = sys.argv[1]
+            if not os.path.exists(file_path):
+                print(f"Error: File '{file_path}' not found")
                 return False
         else:
-            print("Usage: python test_transcribe.py <video_file>")
+            print("Usage: python test_transcribe.py <audio_or_video_file>")
             print("Example: python test_transcribe.py sample.mp4")
+            print("Example: python test_transcribe.py audio.mp3")
             return False
         
-        print(f"Transcribing: {video_path}")
+        print(f"Transcribing: {file_path}")
         
-        # Use the new API with automatic model downloading
-        result = whisper_parallel_cpu.transcribe_video(video_path, model="base", threads=4)
+        # Use the new smart transcribe function that detects file type automatically (CPU-only by default)
+        result = whisper_parallel_cpu.transcribe(file_path, model="base", threads=4)
         
         print("\nTranscription result:")
         print("=" * 50)

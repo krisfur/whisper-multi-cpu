@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Thread Benchmark for Cloud Containers
-Tests different thread counts to find optimal performance
+Tests different thread counts to find optimal performance for audio/video files
 """
 
 import whisper_parallel_cpu
@@ -19,7 +19,7 @@ def get_system_info():
     print(f"Platform: {sys.platform}")
     print()
 
-def benchmark_threads(video_path, model_path, max_threads=None):
+def benchmark_threads(file_path, model_path, max_threads=None):
     """Benchmark different thread counts"""
     if max_threads is None:
         cpu_count = psutil.cpu_count()
@@ -28,8 +28,17 @@ def benchmark_threads(video_path, model_path, max_threads=None):
     # Ensure max_threads is a valid integer
     max_threads = int(max_threads)
     
+    # Determine file type
+    if whisper_parallel_cpu._is_audio_file(file_path):
+        file_type = "audio"
+    elif whisper_parallel_cpu._is_video_file(file_path):
+        file_type = "video"
+    else:
+        file_type = "media"
+    
     print(f"=== Thread Benchmark (max {max_threads} threads) ===")
-    print(f"Video: {video_path}")
+    print(f"File: {file_path}")
+    print(f"Type: {file_type}")
     print(f"Model: {model_path}")
     print()
     
@@ -44,7 +53,7 @@ def benchmark_threads(video_path, model_path, max_threads=None):
         print(f"Testing {threads} thread(s)...", end=" ", flush=True)
         start_time = time.time()
         try:
-            result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu=False)
+            result = whisper_parallel_cpu.transcribe(file_path, model_path, threads, use_gpu=False)
             elapsed = time.time() - start_time
             results_cpu[threads] = elapsed
             print(f"✓ {elapsed:.2f}s")
@@ -79,7 +88,7 @@ def benchmark_threads(video_path, model_path, max_threads=None):
         print(f"Testing {threads} thread(s)...", end=" ", flush=True)
         start_time = time.time()
         try:
-            result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu=True)
+            result = whisper_parallel_cpu.transcribe(file_path, model_path, threads, use_gpu=True)
             elapsed = time.time() - start_time
             results_gpu[threads] = elapsed
             print(f"✓ {elapsed:.2f}s")
@@ -131,29 +140,44 @@ def get_recommendations(results_cpu, results_gpu, max_threads):
     print(f"- For shared environments: Use 3 threads (leaves 1 core free)")
     print(f"- For batch processing: Use 4 threads (maximize throughput)")
     print(f"- Monitor CPU usage and adjust based on other workloads")
+    print(f"- Works with both audio and video files")
 
 if __name__ == "__main__":
     # Default values
-    video_path = "video.mp4"
+    file_path = "video.mp4"
     model_path = "models/ggml-base.en.bin"
     max_threads = 8
     
     # Parse command line arguments
     if len(sys.argv) > 1:
-        video_path = sys.argv[1]
+        file_path = sys.argv[1]
     if len(sys.argv) > 2:
         model_path = sys.argv[2]
     if len(sys.argv) > 3:
         max_threads = int(sys.argv[3])
     
     # Check if files exist
-    if not os.path.exists(video_path):
-        print(f"Error: Video file '{video_path}' not found")
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found")
+        print("Usage: python thread_benchmark.py [audio_or_video_file] [model_path] [max_threads]")
+        print("Example: python thread_benchmark.py video.mp4")
+        print("Example: python thread_benchmark.py audio.mp3")
         sys.exit(1)
     if not os.path.exists(model_path):
         print(f"Error: Model file '{model_path}' not found")
         sys.exit(1)
     
+    # Check file type
+    if whisper_parallel_cpu._is_audio_file(file_path):
+        file_type = "audio"
+    elif whisper_parallel_cpu._is_video_file(file_path):
+        file_type = "video"
+    else:
+        print(f"Warning: Unknown file type '{file_path}' - will attempt transcription anyway")
+        file_type = "media"
+    
+    print(f"Testing with {file_type} file: {file_path}")
+    
     get_system_info()
-    results_cpu, results_gpu = benchmark_threads(video_path, model_path, max_threads)
+    results_cpu, results_gpu = benchmark_threads(file_path, model_path, max_threads)
     get_recommendations(results_cpu, results_gpu, max_threads) 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Benchmark script for whisper_parallel_cpu transcriber
-Tests scaling with multiple videos and different thread configurations
+Tests scaling with multiple audio/video files and different thread configurations
 """
 
 import sys
@@ -30,11 +30,11 @@ def get_system_info() -> Dict[str, Any]:
     }
     return info
 
-def single_transcription(video_path: str, model_path: str, threads: int, use_gpu: bool = True) -> Dict[str, Any]:
+def single_transcription(file_path: str, model_path: str, threads: int, use_gpu: bool = True) -> Dict[str, Any]:
     """Single transcription with timing"""
     start_time = time.time()
     try:
-        result = whisper_parallel_cpu.transcribe_video(video_path, model_path, threads, use_gpu)
+        result = whisper_parallel_cpu.transcribe(file_path, model_path, threads, use_gpu)
         end_time = time.time()
         return {
             'success': True,
@@ -50,10 +50,12 @@ def single_transcription(video_path: str, model_path: str, threads: int, use_gpu
             'error': str(e)
         }
 
-def benchmark_single_video_threads(video_path, model_path, thread_counts):
-    """Benchmark single video with different thread counts"""
-    print(f"\n🔧 Benchmarking single video with different thread counts...")
-    print(f"Video: {video_path}")
+def benchmark_single_file_threads(file_path, model_path, thread_counts):
+    """Benchmark single audio/video file with different thread counts"""
+    file_type = "audio" if whisper_parallel_cpu._is_audio_file(file_path) else "video"
+    print(f"\n🔧 Benchmarking single {file_type} file with different thread counts...")
+    print(f"File: {file_path}")
+    print(f"Type: {file_type}")
     print(f"Model: {model_path}")
     
     results = {}
@@ -65,7 +67,7 @@ def benchmark_single_video_threads(video_path, model_path, thread_counts):
         times = []
         for i in range(3):  # 3 runs per configuration
             print(f"    Run {i+1}/3...", end=" ", flush=True)
-            result = single_transcription(video_path, model_path, threads)
+            result = single_transcription(file_path, model_path, threads)
             if result['success']:
                 times.append(result['duration'])
                 print(f"✓ {result['duration']:.2f}s")
@@ -84,17 +86,18 @@ def benchmark_single_video_threads(video_path, model_path, thread_counts):
     
     return results
 
-def benchmark_multiple_videos_sequential(video_paths, model_path, threads):
-    """Benchmark multiple videos processed sequentially"""
-    print(f"\n📹 Benchmarking {len(video_paths)} videos sequentially...")
+def benchmark_multiple_files_sequential(file_paths, model_path, threads):
+    """Benchmark multiple audio/video files processed sequentially"""
+    print(f"\n📹 Benchmarking {len(file_paths)} files sequentially...")
     print(f"Threads per transcription: {threads}")
     
     start_time = time.time()
     results = []
     
-    for i, video_path in enumerate(video_paths, 1):
-        print(f"  Processing video {i}/{len(video_paths)}: {os.path.basename(video_path)}")
-        result = single_transcription(video_path, model_path, threads)
+    for i, file_path in enumerate(file_paths, 1):
+        file_type = "audio" if whisper_parallel_cpu._is_audio_file(file_path) else "video"
+        print(f"  Processing {file_type} file {i}/{len(file_paths)}: {os.path.basename(file_path)}")
+        result = single_transcription(file_path, model_path, threads)
         results.append(result)
         if not result['success']:
             print(f"    ✗ Failed: {result['error']}")
@@ -107,17 +110,17 @@ def benchmark_multiple_videos_sequential(video_paths, model_path, threads):
         avg_time = statistics.mean([r['duration'] for r in successful_results])
         return {
             'total_time': total_time,
-            'avg_per_video': avg_time,
+            'avg_per_file': avg_time,
             'successful': len(successful_results),
-            'total': len(video_paths),
+            'total': len(file_paths),
             'throughput': len(successful_results) / total_time
         }
     else:
         return {'error': 'All transcriptions failed'}
 
-def benchmark_multiple_videos_parallel(video_paths, model_path, threads_per_job, max_workers):
-    """Benchmark multiple videos processed in parallel"""
-    print(f"\n🚀 Benchmarking {len(video_paths)} videos in parallel...")
+def benchmark_multiple_files_parallel(file_paths, model_path, threads_per_job, max_workers):
+    """Benchmark multiple audio/video files processed in parallel"""
+    print(f"\n🚀 Benchmarking {len(file_paths)} files in parallel...")
     print(f"Threads per transcription: {threads_per_job}")
     print(f"Max parallel workers: {max_workers}")
     
@@ -125,13 +128,13 @@ def benchmark_multiple_videos_parallel(video_paths, model_path, threads_per_job,
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = [
-            executor.submit(single_transcription, video_path, model_path, threads_per_job)
-            for video_path in video_paths
+            executor.submit(single_transcription, file_path, model_path, threads_per_job)
+            for file_path in file_paths
         ]
         
         results = []
         for i, future in enumerate(futures, 1):
-            print(f"  Waiting for video {i}/{len(video_paths)}...")
+            print(f"  Waiting for file {i}/{len(file_paths)}...")
             result = future.result()
             results.append(result)
             if not result['success']:
@@ -144,9 +147,9 @@ def benchmark_multiple_videos_parallel(video_paths, model_path, threads_per_job,
         avg_time = statistics.mean([r['duration'] for r in successful_results])
         return {
             'total_time': total_time,
-            'avg_per_video': avg_time,
+            'avg_per_file': avg_time,
             'successful': len(successful_results),
-            'total': len(video_paths),
+            'total': len(file_paths),
             'throughput': len(successful_results) / total_time,
             'speedup': (len(successful_results) * avg_time) / total_time if total_time > 0 else 0
         }
@@ -163,7 +166,7 @@ def print_benchmark_results(title, results, system_info):
         print(f"❌ {results['error']}")
         return
     
-    # Check if this is single video results (has 'mean' key in first item)
+    # Check if this is single file results (has 'mean' key in first item)
     if results and isinstance(results, dict) and any(isinstance(data, dict) and 'mean' in data for data in results.values()):
         print(f"System: {system_info['cpu_count']} cores, {system_info['memory_gb']}GB RAM")
         print(f"{'Threads':<8} {'Mean (s)':<10} {'Std (s)':<10} {'Min (s)':<10} {'Max (s)':<10}")
@@ -178,26 +181,39 @@ def print_benchmark_results(title, results, system_info):
             optimal = min(results.items(), key=lambda x: x[1]['mean'])
             print(f"\n🏆 Optimal thread count: {optimal[0]} (avg: {optimal[1]['mean']:.2f}s)")
     
-    else:  # Multiple videos
-        print(f"Total videos: {results['total']}")
+    else:  # Multiple files
+        print(f"Total files: {results['total']}")
         print(f"Successful: {results['successful']}")
         print(f"Total time: {results['total_time']:.2f}s")
-        print(f"Average per video: {results['avg_per_video']:.2f}s")
-        print(f"Throughput: {results['throughput']:.2f} videos/second")
+        print(f"Average per file: {results['avg_per_file']:.2f}s")
+        print(f"Throughput: {results['throughput']:.2f} files/second")
         if 'speedup' in results:
             print(f"Speedup vs sequential: {results['speedup']:.2f}x")
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python benchmark.py <video_file> [num_copies]")
+        print("Usage: python benchmark.py <audio_or_video_file> [num_copies]")
         print("Example: python benchmark.py video.mp4 10")
+        print("Example: python benchmark.py audio.mp3 10")
         sys.exit(1)
     
-    video_path = sys.argv[1]
+    file_path = sys.argv[1]
     num_copies = int(sys.argv[2]) if len(sys.argv) > 2 else 10
     
-    if not os.path.exists(video_path):
-        print(f"Error: Video file '{video_path}' not found")
+    if not os.path.exists(file_path):
+        print(f"Error: File '{file_path}' not found")
+        sys.exit(1)
+    
+    # Check file type
+    if whisper_parallel_cpu._is_audio_file(file_path):
+        file_type = "audio"
+    elif whisper_parallel_cpu._is_video_file(file_path):
+        file_type = "video"
+    else:
+        print(f"Error: Unsupported file type '{file_path}'")
+        print("Supported formats:")
+        print("  Audio: mp3, wav, flac, aac, ogg, m4a, wma, opus, webm, 3gp, amr, au, ra, mid, midi")
+        print("  Video: mp4, avi, mov, mkv, wmv, flv, webm, m4v, 3gp, ogv, ts, mts, m2ts")
         sys.exit(1)
     
     # Check for model
@@ -211,31 +227,32 @@ def main():
     # Get system info
     system_info = get_system_info()
     print(f"🖥️  System: {system_info['cpu_count']} cores, {system_info['memory_gb']}GB RAM")
+    print(f"📁 File type: {file_type}")
     
-    # Create list of video paths (same video repeated)
-    video_paths = [video_path] * num_copies
+    # Create list of file paths (same file repeated)
+    file_paths = [file_path] * num_copies
     
-    # Test 1: Single video with different thread counts
+    # Test 1: Single file with different thread counts
     thread_counts = [1, 2, 4, 8, 16]
     cpu_count = system_info['cpu_count']
     if cpu_count > 16:
         thread_counts.append(cpu_count)
     
-    single_results = benchmark_single_video_threads(video_path, model_path, thread_counts)
-    print_benchmark_results("Single Video - Thread Scaling", single_results, system_info)
+    single_results = benchmark_single_file_threads(file_path, model_path, thread_counts)
+    print_benchmark_results(f"Single {file_type.capitalize()} File - Thread Scaling", single_results, system_info)
     
-    # Test 2: Multiple videos sequential
+    # Test 2: Multiple files sequential
     print(f"\n{'='*60}")
     print(f"📹 Creating {num_copies} copies for batch testing...")
     print(f"{'='*60}")
     
-    # Use optimal thread count from single video test
+    # Use optimal thread count from single file test
     optimal_threads = min(single_results.items(), key=lambda x: x[1]['mean'])[0] if single_results else 4
     
-    sequential_results = benchmark_multiple_videos_sequential(video_paths, model_path, optimal_threads)
-    print_benchmark_results("Multiple Videos - Sequential", sequential_results, system_info)
+    sequential_results = benchmark_multiple_files_sequential(file_paths, model_path, optimal_threads)
+    print_benchmark_results(f"Multiple {file_type.capitalize()} Files - Sequential", sequential_results, system_info)
     
-    # Test 3: Multiple videos parallel
+    # Test 3: Multiple files parallel
     max_workers_options = [1, 2, 4, 8]
     cpu_count = system_info['cpu_count']
     if cpu_count > 8:
@@ -246,35 +263,36 @@ def main():
     print(f"{'='*60}")
     
     for max_workers in max_workers_options:
-        if max_workers > len(video_paths):  # type: ignore
+        if max_workers > len(file_paths):  # type: ignore
             continue
             
-        parallel_results = benchmark_multiple_videos_parallel(
-            video_paths, model_path, optimal_threads, max_workers
+        parallel_results = benchmark_multiple_files_parallel(
+            file_paths, model_path, optimal_threads, max_workers
         )
-        print_benchmark_results(f"Multiple Videos - Parallel ({max_workers} workers)", 
+        print_benchmark_results(f"Multiple {file_type.capitalize()} Files - Parallel ({max_workers} workers)", 
                                parallel_results, system_info)
     
     # Summary
     print(f"\n{'='*60}")
     print(f"📋 SUMMARY")
     print(f"{'='*60}")
+    print(f"File type: {file_type}")
     print(f"Optimal thread count per transcription: {optimal_threads}")
     print(f"System CPU cores: {system_info['cpu_count']}")
-    print(f"Tested with {num_copies} video copies")
+    print(f"Tested with {num_copies} file copies")
     
     if sequential_results and 'throughput' in sequential_results:
-        print(f"Sequential throughput: {sequential_results['throughput']:.2f} videos/second")
+        print(f"Sequential throughput: {sequential_results['throughput']:.2f} {file_type} files/second")
     
     # Find best parallel result
     best_parallel = None
     best_throughput = 0
     best_workers = 0
     for max_workers in max_workers_options:
-        if max_workers > len(video_paths):  # type: ignore
+        if max_workers > len(file_paths):  # type: ignore
             continue
-        parallel_results = benchmark_multiple_videos_parallel(
-            video_paths, model_path, optimal_threads, max_workers
+        parallel_results = benchmark_multiple_files_parallel(
+            file_paths, model_path, optimal_threads, max_workers
         )
         if 'throughput' in parallel_results and parallel_results['throughput'] > best_throughput:  # type: ignore
             best_throughput = parallel_results['throughput']
@@ -282,41 +300,41 @@ def main():
             best_workers = max_workers
     
     if best_parallel:
-        print(f"Best parallel throughput: {best_parallel['throughput']:.2f} videos/second")
+        print(f"Best parallel throughput: {best_parallel['throughput']:.2f} {file_type} files/second")
         print(f"Speedup vs sequential: {best_parallel['speedup']:.2f}x")
     
     # Best configuration for reproduction
     print(f"\n{'='*60}")
     print(f"🏆 BEST CONFIGURATION FOR REPRODUCTION")
     print(f"{'='*60}")
-    print(f"Single video transcription:")
+    print(f"Single {file_type} file transcription:")
     print(f"  threads = {optimal_threads}")
     print(f"  model = {model_path}")
     print(f"")
-    print(f"Batch processing ({num_copies} videos):")
+    print(f"Batch processing ({num_copies} {file_type} files):")
     if best_parallel and best_parallel['speedup'] > 1.1:  # type: ignore
         print(f"  Use parallel processing with {best_workers} workers")
         print(f"  Each worker uses {optimal_threads} threads")
-        print(f"  Expected throughput: {best_parallel['throughput']:.2f} videos/second")
+        print(f"  Expected throughput: {best_parallel['throughput']:.2f} {file_type} files/second")
     else:
         print(f"  Use sequential processing")
         print(f"  Each transcription uses {optimal_threads} threads")
-        print(f"  Expected throughput: {sequential_results['throughput']:.2f} videos/second")
+        print(f"  Expected throughput: {sequential_results['throughput']:.2f} {file_type} files/second")
     print(f"")
     print(f"Python code example:")
     print(f"  import whisper_parallel_cpu")
     if best_parallel and best_parallel['speedup'] > 1.1:  # type: ignore
         print(f"  from concurrent.futures import ThreadPoolExecutor")
         print(f"  ")
-        print(f"  def transcribe_video(video_path):")
-        print(f"      return whisper_parallel_cpu.transcribe_video(video_path, '{model_path}', {optimal_threads})")
+        print(f"  def transcribe_file(file_path):")
+        print(f"      return whisper_parallel_cpu.transcribe(file_path, '{model_path}', {optimal_threads})")
         print(f"  ")
         print(f"  with ThreadPoolExecutor(max_workers={best_workers}) as executor:")
-        print(f"      results = list(executor.map(transcribe_video, video_paths))")
+        print(f"      results = list(executor.map(transcribe_file, file_paths))")
     else:
         print(f"  ")
-        print(f"  for video_path in video_paths:")
-        print(f"      result = whisper_parallel_cpu.transcribe_video(video_path, '{model_path}', {optimal_threads})")
+        print(f"  for file_path in file_paths:")
+        print(f"      result = whisper_parallel_cpu.transcribe(file_path, '{model_path}', {optimal_threads})")
 
 if __name__ == "__main__":
     main() 

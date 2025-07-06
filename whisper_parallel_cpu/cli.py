@@ -18,11 +18,11 @@ def main():
     download_parser.add_argument('--force', action='store_true', help='Force re-download')
     
     # Transcribe command
-    transcribe_parser = subparsers.add_parser('transcribe', help='Transcribe a video file')
-    transcribe_parser.add_argument('video', help='Path to video file')
+    transcribe_parser = subparsers.add_parser('transcribe', help='Transcribe an audio or video file')
+    transcribe_parser.add_argument('file', help='Path to audio or video file')
     transcribe_parser.add_argument('--model', default='base', help='Model name (default: base)')
     transcribe_parser.add_argument('--threads', type=int, default=4, help='Number of threads (default: 4)')
-    transcribe_parser.add_argument('--no-gpu', action='store_true', help='Disable GPU acceleration')
+    transcribe_parser.add_argument('--gpu', action='store_true', help='Enable GPU acceleration (default: CPU-only)')
     
     args = parser.parse_args()
     
@@ -38,18 +38,18 @@ def main():
             sys.exit(1)
     
     elif args.command == 'transcribe':
-        from . import transcribe_video
+        from . import transcribe
         try:
-            result = transcribe_video(
-                video_path=args.video,
+            result = transcribe(
+                file_path=args.file,
                 model=args.model,
                 threads=args.threads,
-                use_gpu=not args.no_gpu
+                use_gpu=args.gpu
             )
             print("Transcription result:")
             print(result)
         except Exception as e:
-            print(f"Error transcribing video: {e}", file=sys.stderr)
+            print(f"Error transcribing file: {e}", file=sys.stderr)
             sys.exit(1)
     
     else:
