@@ -1,6 +1,6 @@
-# Whisper Parallel CPU Video Transcriber
+# Whisper Parallel CPU Audio & Video Transcriber
 
-A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management. Targeting distributed cloud deployments and transcription of video files.
+A minimal, robust Python package for whisper.cpp with CPU-optimized threading and integrated model management. Transcribe both audio and video files with high performance. Targeting distributed cloud deployments and transcription workflows.
 
 ## 🚀 Quick Start
 
@@ -12,11 +12,24 @@ pip install whisper-parallel-cpu
 **Use in Python:**
 ```python
 import whisper_parallel_cpu
+
+# Transcribe audio files
+text = whisper_parallel_cpu.transcribe("audio.mp3", model="base")
+
+# Transcribe video files
 text = whisper_parallel_cpu.transcribe("video.mp4", model="base")
+
+# Or use specific functions
+text = whisper_parallel_cpu.transcribe_audio("audio.wav", model="small")
+text = whisper_parallel_cpu.transcribe_video("video.mkv", model="medium")
 ```
 
 **Or use the CLI:**
 ```bash
+# Transcribe audio
+whisper_parallel_cpu transcribe audio.mp3 --model base
+
+# Transcribe video
 whisper_parallel_cpu transcribe video.mp4 --model base
 ```
 
@@ -27,7 +40,7 @@ whisper_parallel_cpu transcribe video.mp4 --model base
 - **Native C++/pybind11 speed** (CPU & GPU acceleration)
 - **Automatic model download/caching** - no manual setup required
 - **Simple Python & CLI interface** - just `pip install` and go
-- **Input**: `.mp4`, `.mkv`, or any video format `ffmpeg` supports
+- **Input**: Audio (`.mp3`, `.wav`, `.flac`, `.aac`, `.ogg`, `.m4a`) and video (`.mp4`, `.mkv`, `.avi`, `.mov`) formats
 - **Output**: Transcribed text as a Python string
 - **Benchmarking**: Built-in performance testing and optimization tools
 - **Cross-platform**: Works on macOS, Linux, and Windows
@@ -90,17 +103,25 @@ choco install ffmpeg
 ```python
 import whisper_parallel_cpu
 
-# Transcribe with automatic model downloading
-text = whisper_parallel_cpu.transcribe_video("video.mp4", model="base", threads=4)
-print(text)
-
-# Or use the shorter alias
+# Transcribe any audio or video file (auto-detects format)
+text = whisper_parallel_cpu.transcribe("audio.mp3", model="base", threads=4)
 text = whisper_parallel_cpu.transcribe("video.mp4", model="small")
-print(text)
+
+# Use specific functions for audio or video
+text = whisper_parallel_cpu.transcribe_audio("audio.wav", model="base", threads=4)
+text = whisper_parallel_cpu.transcribe_video("video.mkv", model="medium", threads=8)
 
 # CPU-only mode (no GPU)
-text = whisper_parallel_cpu.transcribe("video.mp4", model="base", use_gpu=False)
+text = whisper_parallel_cpu.transcribe("audio.flac", model="base", use_gpu=False)
 ```
+
+### Supported File Formats
+
+**Audio Formats:**
+- `.mp3`, `.wav`, `.flac`, `.aac`, `.ogg`, `.m4a`, `.wma`, `.opus`, `.webm`, `.3gp`, `.amr`, `.au`, `.ra`, `.mid`, `.midi`
+
+**Video Formats:**
+- `.mp4`, `.avi`, `.mov`, `.mkv`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.3gp`, `.ogv`, `.ts`, `.mts`, `.m2ts`
 
 ### Available Models
 
@@ -123,11 +144,16 @@ whisper_parallel_cpu list
 # Download a specific model
 whisper_parallel_cpu download base
 
-# Transcribe a video
+# Transcribe audio files
+whisper_parallel_cpu transcribe audio.mp3 --model base --threads 4
+whisper_parallel_cpu transcribe audio.wav --model small
+
+# Transcribe video files
 whisper_parallel_cpu transcribe video.mp4 --model base --threads 4
+whisper_parallel_cpu transcribe video.mkv --model medium
 
 # Transcribe without GPU (CPU-only)
-whisper_parallel_cpu transcribe video.mp4 --model small --no-gpu
+whisper_parallel_cpu transcribe audio.flac --model small --no-gpu
 ```
 
 ### Model Management
@@ -152,14 +178,15 @@ whisper_parallel_cpu.download_model("base", force=True)
 ### Run Performance Tests
 
 ```bash
-# Test with 5 video copies
+# Test with 5 audio/video copies
+python benchmark.py audio.mp3 5
 python benchmark.py video.mp4 5
 ```
 
 ### What the Benchmark Tests
 
-1. **Thread Scaling**: Tests different thread counts (1, 2, 4, 8, 16, etc.) for single video transcription
-2. **Sequential Processing**: Measures throughput when processing multiple videos one after another
+1. **Thread Scaling**: Tests different thread counts (1, 2, 4, 8, 16, etc.) for single audio/video transcription
+2. **Sequential Processing**: Measures throughput when processing multiple audio/video files one after another
 3. **Parallel Processing**: Tests concurrent processing with different numbers of workers
 4. **Optimal Configuration**: Provides the best settings for your specific hardware
 
@@ -167,12 +194,38 @@ python benchmark.py video.mp4 5
 
 1. **GPU Acceleration**: The system automatically uses Metal (macOS) or CUDA (Linux/Windows) when available
 2. **Thread Count**: Use the benchmark to find optimal thread count for your CPU
-3. **Batch Processing**: For multiple videos, use parallel processing with ThreadPoolExecutor
+3. **Batch Processing**: For multiple audio/video files, use parallel processing with ThreadPoolExecutor
 4. **Model Size**: Smaller models (base, small) are faster but less accurate than larger ones (medium, large)
 
 ---
 
 ## ⚙️ API Reference
+
+### `transcribe(file_path, model, threads, use_gpu)`
+
+Transcribes an audio or video file using Whisper. Automatically detects file type.
+
+**Parameters:**
+- `file_path` (str): Path to the audio or video file
+- `model` (str): Model name (e.g. "base", "tiny", etc.) or path to Whisper model binary (.bin file)
+- `threads` (int): Number of CPU threads to use (default: 4)
+- `use_gpu` (bool): Whether to use GPU acceleration (default: True)
+
+**Returns:**
+- `str`: Transcribed text
+
+### `transcribe_audio(audio_path, model, threads, use_gpu)`
+
+Transcribes an audio file using Whisper.
+
+**Parameters:**
+- `audio_path` (str): Path to the audio file
+- `model` (str): Model name (e.g. "base", "tiny", etc.) or path to Whisper model binary (.bin file)
+- `threads` (int): Number of CPU threads to use (default: 4)
+- `use_gpu` (bool): Whether to use GPU acceleration (default: True)
+
+**Returns:**
+- `str`: Transcribed text
 
 ### `transcribe_video(video_path, model, threads, use_gpu)`
 
