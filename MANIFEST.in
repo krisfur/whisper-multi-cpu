@@ -1,3 +1,5 @@
+include README.md
+include LICENSE
 recursive-include whisper_parallel_cpu *.cpp *.h *.py *.so
 recursive-include whisper_parallel_cpu/include *.h
 recursive-include whisper_parallel_cpu/ggml/include *.h

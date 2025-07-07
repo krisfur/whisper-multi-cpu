@@ -44,9 +44,9 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
       run: |
-        # Upload both source and wheel distributions
+        # Upload source distribution only (C++ extensions need to be compiled on target platform)
         # --skip-existing prevents errors if version already exists
-        twine upload dist/* --skip-existing
+        twine upload dist/*.tar.gz --skip-existing
         
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
