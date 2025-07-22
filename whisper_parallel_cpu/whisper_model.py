@@ -7,7 +7,17 @@ import os
 import tempfile
 from typing import Optional, Union
 from .model_manager import ensure_model, get_model_manager
-from . import whisper_parallel_cpu as _extension
+# Lazy import to avoid issues during module import
+_extension = None
+
+def _get_extension():
+    global _extension
+    if _extension is None:
+        try:
+            from . import whisper_parallel_cpu as _extension
+        except ImportError as e:
+            raise ImportError("C++ extension not available. Please rebuild the package.") from e
+    return _extension
 
 
 class WhisperModel:
@@ -60,7 +70,7 @@ class WhisperModel:
             
             try:
                 # This will load the model into the context manager
-                _extension.transcribe_video(tmp_path, self.model_path, self.threads, self.use_gpu)
+                _get_extension().transcribe_video(tmp_path, self.model_path, self.threads, self.use_gpu)
                 self._loaded = True
             except Exception:
                 # If transcription fails, that's okay - the model is still loaded
@@ -87,7 +97,7 @@ class WhisperModel:
         self._ensure_loaded()
         
         # Use the context-reusing transcription function
-        return _extension.transcribe_video(file_path, self.model_path, self.threads, self.use_gpu)
+        return _get_extension().transcribe_video(file_path, self.model_path, self.threads, self.use_gpu)
     
     def transcribe_video(self, video_path: str) -> str:
         """
@@ -115,12 +125,12 @@ class WhisperModel:
     
     def clear_contexts(self):
         """Clear all cached whisper contexts to free memory"""
-        _extension.clear_whisper_contexts()
+        _get_extension().clear_whisper_contexts()
         self._loaded = False
     
     def get_context_count(self) -> int:
         """Get the number of currently cached whisper contexts"""
-        return _extension.get_whisper_context_count()
+        return _get_extension().get_whisper_context_count()
     
     def __repr__(self):
         return f"WhisperModel(model='{self.model_name}', use_gpu={self.use_gpu}, threads={self.threads})"
