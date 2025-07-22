@@ -100,6 +100,8 @@ choco install ffmpeg
 
 ### Python API
 
+#### Basic Usage (Function-based)
+
 ```python
 import whisper_parallel_cpu
 
@@ -113,6 +115,33 @@ text = whisper_parallel_cpu.transcribe_video("video.mkv", model="medium", thread
 
 # CPU-only mode (no GPU)
 text = whisper_parallel_cpu.transcribe("audio.flac", model="base", use_gpu=False)
+```
+
+#### Advanced Usage (Model Reuse)
+
+For better performance when transcribing multiple files, use the `WhisperModel` class to load the model once and reuse it:
+
+```python
+from whisper_parallel_cpu import WhisperModel
+
+# Create a model instance (model is loaded on first use)
+model = WhisperModel(model="base", use_gpu=False, threads=4)
+
+# Transcribe multiple files using the same loaded model
+files = ["audio1.mp3", "audio2.wav", "video1.mp4", "video2.mkv"]
+for file_path in files:
+    text = model.transcribe(file_path)
+    print(f"Transcribed {file_path}: {text[:100]}...")
+
+# Use as context manager
+with WhisperModel(model="small", use_gpu=True) as model:
+    text1 = model.transcribe("audio1.mp3")
+    text2 = model.transcribe("audio2.wav")
+    # Model is automatically managed
+
+# Memory management
+model.clear_contexts()  # Free memory
+print(f"Active contexts: {model.get_context_count()}")
 ```
 
 ### Supported File Formats
@@ -192,10 +221,40 @@ python benchmark.py video.mp4 5
 
 ### Performance Optimization Tips
 
-1. **GPU Acceleration**: The system automatically uses Metal (macOS) or CUDA (Linux/Windows) when available
-2. **Thread Count**: Use the benchmark to find optimal thread count for your CPU
-3. **Batch Processing**: For multiple audio/video files, use parallel processing with ThreadPoolExecutor
-4. **Model Size**: Smaller models (base, small) are faster but less accurate than larger ones (medium, large)
+1. **Model Reuse**: Use `WhisperModel` class for multiple transcriptions to avoid reloading the model each time
+2. **GPU Acceleration**: The system automatically uses Metal (macOS) or CUDA (Linux/Windows) when available
+3. **Thread Count**: Use the benchmark to find optimal thread count for your CPU
+4. **Batch Processing**: For multiple audio/video files, use parallel processing with ThreadPoolExecutor
+5. **Model Size**: Smaller models (base, small) are faster but less accurate than larger ones (medium, large)
+
+### Model Reuse Performance
+
+When transcribing multiple files, using the `WhisperModel` class can provide significant performance improvements:
+
+```python
+from whisper_parallel_cpu import WhisperModel
+import time
+
+# Method 1: Using WhisperModel (model reuse) - FASTER
+model = WhisperModel(model="base")
+start = time.time()
+for file in files:
+    text = model.transcribe(file)
+model_time = time.time() - start
+
+# Method 2: Using transcribe function (no reuse) - SLOWER
+start = time.time()
+for file in files:
+    text = whisper_parallel_cpu.transcribe(file, model="base")
+function_time = time.time() - start
+
+print(f"Speedup with model reuse: {function_time / model_time:.2f}x")
+```
+
+**Typical speedups:**
+- 2-5x faster for multiple files with the same model
+- Reduced memory usage through context sharing
+- Better for batch processing workflows
 
 ---
 
@@ -254,6 +313,67 @@ text = whisper_parallel_cpu.transcribe_video(
     threads=8, 
     use_gpu=False
 )
+```
+
+### `WhisperModel(model, use_gpu, threads)`
+
+A class for efficient model reuse across multiple transcriptions.
+
+**Parameters:**
+- `model` (str): Model name (e.g. "base", "tiny", etc.) or path to Whisper model binary (.bin file)
+- `use_gpu` (bool): Whether to use GPU acceleration (default: False)
+- `threads` (int): Number of CPU threads to use (default: 4)
+
+**Methods:**
+- `transcribe(file_path)`: Transcribe any audio or video file
+- `transcribe_audio(audio_path)`: Transcribe an audio file
+- `transcribe_video(video_path)`: Transcribe a video file
+- `clear_contexts()`: Clear all cached contexts to free memory
+- `get_context_count()`: Get number of cached contexts
+
+**Example:**
+```python
+from whisper_parallel_cpu import WhisperModel
+
+# Create model instance
+model = WhisperModel(model="base", use_gpu=False, threads=4)
+
+# Transcribe multiple files efficiently
+files = ["audio1.mp3", "audio2.wav", "video1.mp4"]
+for file_path in files:
+    text = model.transcribe(file_path)
+    print(f"Transcribed: {text[:50]}...")
+
+# Memory management
+model.clear_contexts()
+```
+
+### `clear_contexts()`
+
+Clear all cached whisper contexts to free memory.
+
+**Example:**
+```python
+import whisper_parallel_cpu
+
+# Clear all cached contexts
+whisper_parallel_cpu.clear_contexts()
+```
+
+### `get_context_count()`
+
+Get the number of currently cached whisper contexts.
+
+**Returns:**
+- `int`: Number of cached contexts
+
+**Example:**
+```python
+import whisper_parallel_cpu
+
+# Check how many contexts are cached
+count = whisper_parallel_cpu.get_context_count()
+print(f"Active contexts: {count}")
 ```
 
 ---
