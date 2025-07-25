@@ -40,6 +40,11 @@ jobs:
       run: |
         brew install ffmpeg cmake
 
+    - name: Install system dependencies (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        # Windows dependencies are handled by cibuildwheel
+
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.16.2
       with:
@@ -53,7 +58,7 @@ jobs:
           python test_build.py
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
         path: dist/*.whl
@@ -86,7 +91,7 @@ jobs:
         python -m build --sdist
         
     - name: Upload source distribution
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sdist
         path: dist/*.tar.gz
@@ -97,12 +102,12 @@ jobs:
     
     steps:
     - name: Download all wheels
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: dist
 
     - name: Download source distribution
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: sdist
         path: dist
