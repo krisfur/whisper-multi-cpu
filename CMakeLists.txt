@@ -3,6 +3,10 @@ project(whisper_parallel_cpu LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Force static linking to avoid shared library dependencies
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Find Python and pybind11
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 
@@ -22,6 +26,11 @@ FetchContent_Declare(
     GIT_TAG        master
 )
 FetchContent_MakeAvailable(whisper_cpp)
+
+# Force whisper to build as static library
+set(WHISPER_BUILD_SHARED OFF CACHE BOOL "Build whisper as shared library" FORCE)
+set(WHISPER_BUILD_TESTS OFF CACHE BOOL "Build whisper tests" FORCE)
+set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "Build whisper examples" FORCE)
 
 # Create the Python extension
 pybind11_add_module(whisper_parallel_cpu MODULE
