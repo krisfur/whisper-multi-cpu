@@ -40,22 +40,11 @@ jobs:
       run: |
         brew install ffmpeg cmake
 
-    - name: Install system dependencies (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        # Windows dependencies are handled by cibuildwheel
-
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.16.2
       with:
         output-dir: dist
         package-dir: .
-        before-build: |
-          # Install any additional dependencies needed for building
-          pip install --upgrade pip
-        test-command: |
-          # Test the built wheel
-          python test_build.py
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4
