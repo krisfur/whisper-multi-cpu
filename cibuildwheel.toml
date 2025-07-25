@@ -2,15 +2,61 @@
 # Build wheels only for the platforms you need: x86_64 Linux and Apple Silicon Macs
 build = ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*"]
 
-# Skip problematic platforms only
+# Skip problematic platforms only - be more specific with patterns
 skip = [
     "cp38-win*",  # Skip Python 3.8 on Windows
-    "*-manylinux_i686",  # Skip 32-bit Linux builds
-    "*-manylinux1_i686",  # Skip old 32-bit Linux builds
-    "*-musllinux_i686",   # Skip 32-bit musl Linux builds
-    "*-musllinux_x86_64", # Skip musl Linux (not needed)
-    "*-manylinux1_x86_64", # Skip old manylinux1 (not needed)
-    "*-win*",             # Skip all Windows builds
+    "cp39-win*",  # Skip Python 3.9 on Windows
+    "cp310-win*", # Skip Python 3.10 on Windows
+    "cp311-win*", # Skip Python 3.11 on Windows
+    "cp312-win*", # Skip Python 3.12 on Windows
+    "cp313-win*", # Skip Python 3.13 on Windows
+    "cp314-win*", # Skip Python 3.14 on Windows
+    "cp314t-win*", # Skip Python 3.14 on Windows
+    # Skip ALL 32-bit builds
+    "cp38-manylinux_i686",
+    "cp39-manylinux_i686", 
+    "cp310-manylinux_i686",
+    "cp311-manylinux_i686",
+    "cp312-manylinux_i686",
+    "cp313-manylinux_i686",
+    "cp314-manylinux_i686",
+    "cp314t-manylinux_i686",
+    # Skip old manylinux1 32-bit builds
+    "cp38-manylinux1_i686",
+    "cp39-manylinux1_i686",
+    "cp310-manylinux1_i686", 
+    "cp311-manylinux1_i686",
+    "cp312-manylinux1_i686",
+    "cp313-manylinux1_i686",
+    "cp314-manylinux1_i686",
+    "cp314t-manylinux1_i686",
+    # Skip musl 32-bit builds
+    "cp38-musllinux_i686",
+    "cp39-musllinux_i686",
+    "cp310-musllinux_i686",
+    "cp311-musllinux_i686", 
+    "cp312-musllinux_i686",
+    "cp313-musllinux_i686",
+    "cp314-musllinux_i686",
+    "cp314t-musllinux_i686",
+    # Skip musl x86_64 (not needed)
+    "cp38-musllinux_x86_64",
+    "cp39-musllinux_x86_64",
+    "cp310-musllinux_x86_64",
+    "cp311-musllinux_x86_64",
+    "cp312-musllinux_x86_64", 
+    "cp313-musllinux_x86_64",
+    "cp314-musllinux_x86_64",
+    "cp314t-musllinux_x86_64",
+    # Skip old manylinux1 x86_64 (not needed)
+    "cp38-manylinux1_x86_64",
+    "cp39-manylinux1_x86_64",
+    "cp310-manylinux1_x86_64",
+    "cp311-manylinux1_x86_64",
+    "cp312-manylinux1_x86_64",
+    "cp313-manylinux1_x86_64", 
+    "cp314-manylinux1_x86_64",
+    "cp314t-manylinux1_x86_64",
 ]
 
 # Environment variables
