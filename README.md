@@ -76,6 +76,8 @@ python test_transcribe.py video.mp4
 - **cmake** (>=3.15) - automatically handled by pip
 - **ffmpeg** (for audio extraction)
 
+**Note for uv users:** If building from source with `uv`, ensure `build-essential` (Ubuntu/Debian) or equivalent C++ build tools are installed first.
+
 ### Install ffmpeg
 
 **macOS:**
