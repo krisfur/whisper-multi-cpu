@@ -10,16 +10,8 @@ permissions:
 
 jobs:
   build-wheels:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12']
-        exclude:
-          # Exclude Python 3.8 on Windows as it's not supported by cibuildwheel
-          - os: windows-latest
-            python-version: '3.8'
-
+    runs-on: ubuntu-latest
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -27,18 +19,12 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: '3.10'
 
-    - name: Install system dependencies (Linux)
-      if: runner.os == 'Linux'
+    - name: Install system dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y ffmpeg cmake build-essential
-
-    - name: Install system dependencies (macOS)
-      if: runner.os == 'macOS'
-      run: |
-        brew install ffmpeg cmake
 
     - name: Build wheels
       uses: pypa/cibuildwheel@v2.16.2
@@ -49,7 +35,7 @@ jobs:
     - name: Upload wheels
       uses: actions/upload-artifact@v4
       with:
-        name: wheels-${{ matrix.os }}-${{ matrix.python-version }}
+        name: wheels
         path: dist/*.whl
 
   build-sdist:
@@ -93,6 +79,7 @@ jobs:
     - name: Download all wheels
       uses: actions/download-artifact@v4
       with:
+        name: wheels
         path: dist
 
     - name: Download source distribution
