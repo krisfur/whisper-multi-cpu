@@ -1,6 +1,17 @@
 [tool.cibuildwheel]
-# Build wheels for all platforms
+# Build wheels only for the platforms you need: x86_64 Linux and Apple Silicon Macs
 build = ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+
+# Skip problematic platforms only
+skip = [
+    "cp38-win*",  # Skip Python 3.8 on Windows
+    "*-manylinux_i686",  # Skip 32-bit Linux builds
+    "*-manylinux1_i686",  # Skip old 32-bit Linux builds
+    "*-musllinux_i686",   # Skip 32-bit musl Linux builds
+    "*-musllinux_x86_64", # Skip musl Linux (not needed)
+    "*-manylinux1_x86_64", # Skip old manylinux1 (not needed)
+    "*-win*",             # Skip all Windows builds
+]
 
 # Environment variables
 [tool.cibuildwheel.environment]
@@ -12,9 +23,8 @@ CIBW_BEFORE_BUILD_WINDOWS = ""
 # Test command
 CIBW_TEST_COMMAND = "python test_build.py"
 
-# Build options
-CIBW_BUILD_VERBOSITY = "1"
-CIBW_SKIP = "cp38-win*"  # Skip Python 3.8 on Windows
+# Build options - increase verbosity for better debugging
+CIBW_BUILD_VERBOSITY = "2"
 
 # Platform-specific settings
 [tool.cibuildwheel.linux]
