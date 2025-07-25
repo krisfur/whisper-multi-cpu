@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 # Force static linking BEFORE including any dependencies
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Build shared libraries" FORCE)
 
+# Ensure all static libraries are built with position independent code
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # Find Python and pybind11
 find_package(Python3 COMPONENTS Interpreter Development.Module REQUIRED)
 
@@ -67,8 +70,6 @@ if(UNIX AND NOT APPLE)
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/whisper_parallel_cpu
         INSTALL_RPATH "$ORIGIN"
         BUILD_WITH_INSTALL_RPATH TRUE
-        # Ensure static linking
-        LINK_FLAGS "-static-libgcc -static-libstdc++"
     )
 elseif(APPLE)
     set_target_properties(whisper_parallel_cpu PROPERTIES
