@@ -202,6 +202,69 @@ whisper_parallel_cpu.download_model("base", force=True)
 
 ---
 
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Import Error: `libwhisper.so.1: cannot open shared object file`
+
+This error occurs on Linux when the package's native extensions can't find the required shared libraries. This is typically resolved by:
+
+1. **Installing from source** (recommended):
+   ```bash
+   pip install --no-binary=whisper-parallel-cpu whisper-parallel-cpu
+   ```
+
+2. **Installing system dependencies**:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt-get update && sudo apt-get install -y ffmpeg cmake build-essential
+   
+   # CentOS/RHEL
+   sudo yum install -y ffmpeg cmake gcc-c++
+   ```
+
+3. **Building from source**:
+   ```bash
+   git clone https://github.com/krisfur/whisper-parallel-cpu.git
+   cd whisper-parallel-cpu
+   pip install -e .
+   ```
+
+#### Build Failures
+
+If you encounter build failures:
+
+1. **Ensure you have the required system dependencies**:
+   - C++17 compiler (gcc/g++ or clang)
+   - cmake >= 3.15
+   - ffmpeg
+
+2. **Check your Python version**: The package requires Python 3.8+
+
+3. **Try building with verbose output**:
+   ```bash
+   pip install --verbose --no-binary=whisper-parallel-cpu whisper-parallel-cpu
+   ```
+
+#### Runtime Issues
+
+- **Memory errors**: Use smaller models (`tiny`, `base`) or reduce thread count
+- **Slow performance**: Use GPU acceleration if available, or optimize thread count
+- **Audio extraction failures**: Ensure ffmpeg is properly installed and accessible
+
+### Testing Your Installation
+
+Run the test script to verify your installation:
+
+```bash
+python test_build.py
+```
+
+This will test both the import and basic functionality of the package.
+
+---
+
 ## 📊 Benchmarking & Performance
 
 ### Run Performance Tests

@@ -6,9 +6,21 @@ requires = [
 ]
 build-backend = "scikit_build_core.build"
 
+[tool.scikit-build]
+# Ensure we build for the target platform with static linking
+cmake.define.WHISPER_BUILD_SHARED = "OFF"
+cmake.define.WHISPER_BUILD_TESTS = "OFF"
+cmake.define.WHISPER_BUILD_EXAMPLES = "OFF"
+
+# Build settings
+build-dir = "build"
+
+# Wheel settings
+wheel.packages = ["whisper_parallel_cpu"]
+
 [project]
 name = "whisper-parallel-cpu"
-version = "1.2.0"
+version = "1.2.1"
 description = "High-performance audio and video transcription using whisper.cpp with automatic model downloading and CPU parallelism"
 readme = "README.md"
 license = "MIT"

@@ -1,0 +1,32 @@
+[tool.cibuildwheel]
+# Build wheels for all platforms
+build = ["cp38-*", "cp39-*", "cp310-*", "cp311-*", "cp312-*"]
+
+# Environment variables
+[tool.cibuildwheel.environment]
+# Ensure we have the right build environment and static linking
+CIBW_BEFORE_BUILD_LINUX = "yum install -y ffmpeg cmake gcc-c++ || apt-get update && apt-get install -y ffmpeg cmake build-essential"
+CIBW_BEFORE_BUILD_MACOS = "brew install ffmpeg cmake"
+CIBW_BEFORE_BUILD_WINDOWS = ""
+
+# Test command
+CIBW_TEST_COMMAND = "python test_build.py"
+
+# Build options
+CIBW_BUILD_VERBOSITY = "1"
+CIBW_SKIP = "cp38-win*"  # Skip Python 3.8 on Windows
+
+# Platform-specific settings
+[tool.cibuildwheel.linux]
+before-all = "yum install -y ffmpeg cmake gcc-c++ || apt-get update && apt-get install -y ffmpeg cmake build-essential"
+
+[tool.cibuildwheel.macos]
+before-all = "brew install ffmpeg cmake"
+
+[tool.cibuildwheel.windows]
+before-all = ""
+
+# Ensure proper wheel building with static linking
+[tool.cibuildwheel.build-options]
+# Force static linking and proper RPATH settings
+CIBW_CMAKE_OPTIONS = "-DWHISPER_BUILD_SHARED=OFF -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=OFF" 
